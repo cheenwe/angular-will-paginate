@@ -1,5 +1,5 @@
 angular-will-paginate
-~~~~~~~~~~~~~~~~~~~~~~~
+---
 
 This is a work in progress directive, mostly a functional sketch for now. This
 is how i console myself that there are no tests yet. Anyway, the purpose of this
@@ -11,6 +11,8 @@ a link. You can also specify an optional config object that overrides some of th
 default behavior.
 
 *Simple Example*
+
+![demo](https://user-images.githubusercontent.com/5643208/36955314-ad1f2d9e-2062-11e8-918b-7dfdadc11483.png)
 
 *Note*: Be sure to inject the willPaginate module in your application definition.
 Once included the directive will be available.
@@ -39,7 +41,13 @@ Once included the directive will be available.
       */
       $scope.willPaginateConfig = {
         previousLabel: 'Past',
-        nextLabel: 'Future'
+        nextLabel: 'Future',
+        nextLabel: 'Next',
+        total: 'Total',
+        record: 'Record',
+        perPage: 'Per Page',
+        jump: 'Jump',
+        page: 'Page',
       };
 
       /*

@@ -11,7 +11,14 @@
   angular.module('willPaginate').run([
     '$templateCache',
     function ($templateCache) {
-      $templateCache.put('template/will_paginate/paginator.html', '<ul class="{{options.paginationClass}}">' + '  <li class="prev" ng-class="{true:\'disabled\'}[params.currentPage == 1]"><span>{{options.previousLabel}}</span></li>' + '  <li ng-class="{active:params.currentPage == page.value, disabled:page.kind == \'gap\' }" ng-repeat-start="page in collection">' + '    <span ng-show="params.currentPage == page.value || page.kind == \'gap\'">{{page.value}}</span>' + '    <a ng-hide="params.currentPage == page.value || page.kind == \'gap\'" ng-click="getPage(page.value)">{{page.value}}</a>' + '  </li>' + '  <li ng-repeat-end></li>' + '  <li class="next" ng-class="{true:\'disabled\'}[params.currentPage == params.totalPages]">' + '    <a ng-hide="params.currentPage == params.totalPages" ng-click="getPage(params.currentPage + 1)">{{options.nextLabel}}</a>' + '    <span ng-show="params.currentPage == params.totalPages">{{options.nextLabel}}</span>' + '  </li>' + '</ul>');
+      $templateCache.put('template/will_paginate/paginator.html',
+        '<ul class="{{options.paginationClass}}">'+
+        '  <li class="first" ng-class="{true:\'disabled\'}[params.currentPage == 1]"><a ng-hide="params.currentPage == 1" ng-click="getPage(1)"> « </a> <span ng-show="params.currentPage == 1"> « </span></li>' + '  <li class="prev" ng-class="{true:\'disabled\'}[params.currentPage == 1]">'+ ' <a ng-hide="params.currentPage == 1" ng-click="getPage(params.currentPage - 1)">{{options.previousLabel}}</a>' + '<span ng-show="params.currentPage == 1">{{options.previousLabel}}</span></li>' + '  <li ng-class="{active:params.currentPage == page.value, disabled:page.kind == \'gap\' }" ng-repeat-start="page in collection">' + '    <span ng-show="params.currentPage == page.value || page.kind == \'gap\'">{{page.value}}</span>' + '    <a ng-hide="params.currentPage == page.value || page.kind == \'gap\'" ng-click="getPage(page.value)">{{page.value}}</a>' + '  </li>' + '  <li ng-repeat-end></li>' + '  <li class="next" ng-class="{true:\'disabled\'}[params.currentPage == params.totalPages]">' + '    <a ng-hide="params.currentPage == params.totalPages" ng-click="getPage(params.currentPage + 1)">{{options.nextLabel}}</a>' + '    <span ng-show="params.currentPage == params.totalPages">{{options.nextLabel}}</span>' + '  </li>' + '  <li class="last" ng-class="{true:\'disabled\'}[params.currentPage == params.totalPages]">' + '    <a ng-hide="params.currentPage == params.totalPages" ng-click="getPage(params.totalPages)"> » </a>' + '    <span ng-show="params.currentPage == params.totalPages"> » </span>' + '  </li>' +
+        '  <span> &nbsp; {{options.total}} <a> {{params.totalEntries}} </a>  {{options.record}} </span>,' +
+        '  <li class="page_more_info"> {{options.perPage}}  <select select-ui ng-model="params.perPage" ng-change="setPerPage(params.perPage)"><option value="15" selected="selected">15</option><option value="30">30</option><option value="50">50</option><option value="100">100</option></select> </li> {{options.record}}' +
+        '  <li class="page_more_input_page" ><input ng-model="params.currentPage" style="background: transparent; width: 28px; padding: 9px 3px; padding-bottom: 0px; margin: 3px 0px 0px 3px; border: none; border-bottom: 1px solid #c1c5cf;"> {{options.page}} </input></li>' +
+        '  <a style="cursor:pointer" ng-hide="params.currentPage == params.totalPages" ng-click="getPage(params.currentPage)">{{options.jump}}</a>' +
+        '</ul>'  );
     }
   ]).directive('willPaginate', function () {
     return {
@@ -26,8 +33,21 @@
         '$scope',
         function ($scope) {
           $scope.getPage = function (num) {
+            if (num < 1) {
+              console.log("page is more then the max")
+              return
+            }
             if ($scope.onClick) {
               $scope.onClick(num);
+            }
+          };
+          $scope.setPerPage = function (num) {
+            var per_page_params = "&per_page=" + num
+            if (window.location.search.indexOf("per_page=") === -1) {
+              window.location.search = window.location.search + per_page_params
+            } else {
+              var reg = /per_page=\d+/gi
+              window.location.search = window.location.search.replace(reg, per_page_params)
             }
           };
         }
@@ -38,6 +58,11 @@
           paginationClass: 'pagination',
           previousLabel: 'Previous',
           nextLabel: 'Next',
+          total: 'Total',
+          record: 'Record',
+          perPage: 'Per Page',
+          jump: 'Jump',
+          page: 'Page',
           innerWindow: 1,
           outerWindow: 1,
           linkSeperator: ' ',
@@ -85,7 +110,7 @@
               value: '\u2026',
               kind: 'gap'
             });
-            for (x = $scope.params.totalPages - $scope.options.outerWindow; x < $scope.params.totalPages; x++) {
+            for (x = $scope.params.totalPages - $scope.options.outerWindow; x <= $scope.params.totalPages; x++) {
               right.push({ value: x });
             }
           } else {
@@ -106,6 +131,12 @@
           if ($scope.params.currentPage) {
             $scope.render();
           }
+        });
+        $scope.$watch('params', function (newVal) {
+          if (typeof newVal === 'undefined') {
+            return;
+          }
+          $scope.render();
         });
         $scope.$watch('params.currentPage', function (newVal) {
           if (typeof newVal === 'undefined') {
